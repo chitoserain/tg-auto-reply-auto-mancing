@@ -20,7 +20,6 @@ async function runVIP(client, peer, useBoost = false) {
 
         await sendMancing(client, peer);
 
-        // Execute Boost Strategy if enabled
         if (useBoost) {
             await handleBoostStrategy(client, peer);
         }
@@ -62,14 +61,10 @@ async function handleBoostStrategy(client, peer) {
         const favMsg = await waitForText(client, peer, /Favorite/i, { timeoutMs: 60000 });
         const trisulaIndices = parseFavorite(favMsg.message || "");
 
-        // Sort descending to get the bottom-most items (highest indices)
-        // This avoids index shifting issues when removing items
         trisulaIndices.sort((a, b) => b - a);
 
-        // Take top 2 (which are the largest indices)
         const toRetrieve = trisulaIndices.slice(0, 2);
 
-        // We strictly need 2 items to proceed with the strategy
         if (toRetrieve.length === 2) {
             console.log(`[VIP] Retrieving 2 Trisula Poseidon from favorites (Bottom-up): ${toRetrieve.join(", ")}`);
 
@@ -80,6 +75,7 @@ async function handleBoostStrategy(client, peer) {
 
             await randomSleep(2000, 4000);
             await sendMessage(client, peer, "/boost");
+
             console.log("[VIP] Boost activated!");
         } else {
             console.log(`[VIP] Not enough Trisula Poseidon found (Found: ${toRetrieve.length}). Skipping boost.`);

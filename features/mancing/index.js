@@ -3,7 +3,7 @@ const { readGroupMessages } = require("../../lib/receiver");
 const { runBasic } = require("./scenarios/basic");
 const { runVIP } = require("./scenarios/vip");
 const { runInventoryCheck } = require("./scenarios/inventory_check");
-const { runGroupLoop } = require("./logic"); // Keep group logic for now or refactor later if needed
+const { runGroupLoop } = require("./logic");
 
 async function run(client) {
     console.log('\nPilih Skenario Mancing:');

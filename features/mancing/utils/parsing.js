@@ -29,8 +29,6 @@ function parseFavorite(text) {
     const trisulaIndices = [];
 
     for (const line of lines) {
-        // Match lines like "1. 🔱 Trisula Poseidon"
-        // We look for the number at the start and "Trisula Poseidon" in the text
         const m = line.match(/^\s*(\d+)\.\s+.*Trisula Poseidon/i);
         if (m) {
             trisulaIndices.push(Number(m[1]));
