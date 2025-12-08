@@ -1,6 +1,6 @@
 const { waitForText, waitForAnyText } = require("../../../lib/receiver");
 const { sleep, getEnv } = require("../../../lib/utils");
-const { sendMancing, checkInventory, processActions, sellAll } = require("../utils/actions");
+const { sendMancing, checkInventory, processActions } = require("../utils/actions");
 
 async function runBasic(client, peer) {
     const finishRegex = /SESI MANCING SELESAI!/i;
@@ -36,10 +36,9 @@ async function runBasic(client, peer) {
             console.log("[Basic] Checking inventory...");
 
             for (let i = 0; i < inventoryCheckCount; i++) {
-                const { favNums, musNums } = await checkInventory(client, peer);
+                const { favNums, musNums, otherNums } = await checkInventory(client, peer);
 
-                await processActions(client, peer, { favNums, musNums });
-                await sellAll(client, peer);
+                await processActions(client, peer, { favNums, musNums, sellNums: otherNums });
 
                 if (inventoryCheckCount > 1) await sleep(2000);
             }
