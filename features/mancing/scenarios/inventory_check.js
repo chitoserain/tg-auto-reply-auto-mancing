@@ -9,12 +9,12 @@ async function runInventoryCheck(client, peer) {
         pageCount++;
         console.log(`[Inventory Check] Checking Page/Batch #${pageCount}`);
 
-        const { favNums, musNums, otherNums } = await checkInventory(client, peer);
-        const totalItems = favNums.length + musNums.length + otherNums.length;
+        const { favNums, sellNums } = await checkInventory(client, peer);
+        const totalItems = favNums.length + sellNums.length;
 
         console.log(`[Inventory Check] Found ${totalItems} items.`);
 
-        await processActions(client, peer, { favNums, musNums, sellNums: otherNums });
+        await processActions(client, peer, { favNums, sellNums });
 
         if (totalItems < 20) {
             console.log("[Inventory Check] Less than 20 items found. Inventory cleared/processed. Stopping.");

@@ -57,9 +57,9 @@ async function runVIP(client, peer, useBoost = false) {
         for (let i = 0; i < inventoryCheckCount; i++) {
             console.log(`[VIP] Post-Fishing Check [${i + 1}/${inventoryCheckCount}]`);
 
-            const { favNums, musNums, otherNums } = await checkInventory(client, peer);
+            const { favNums, sellNums } = await checkInventory(client, peer);
 
-            await processActions(client, peer, { favNums, musNums, sellNums: otherNums });
+            await processActions(client, peer, { favNums, sellNums });
 
             if (i < inventoryCheckCount - 1) await sleep(2000);
         }

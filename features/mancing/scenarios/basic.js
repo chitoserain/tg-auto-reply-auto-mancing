@@ -50,9 +50,9 @@ async function runBasic(client, peer) {
             console.log("[Basic] Checking inventory...");
 
             for (let i = 0; i < inventoryCheckCount; i++) {
-                const { favNums, musNums, otherNums } = await checkInventory(client, peer);
+                const { favNums, otherNums } = await checkInventory(client, peer);
 
-                await processActions(client, peer, { favNums, musNums, sellNums: otherNums });
+                await processActions(client, peer, { favNums, sellNums: otherNums });
 
                 if (inventoryCheckCount > 1) await sleep(2000);
             }

@@ -1,9 +1,8 @@
-const { FAVORITE_ITEMS, MUSEUM_ITEMS } = require("../data/items");
+const { FAVORITE_ITEMS } = require("../data/items");
 
 function parseInventory(text) {
     const lines = String(text).split(/\r?\n/);
     const favNums = [];
-    const musNums = [];
     const otherNums = [];
 
     for (let i = lines.length - 1; i >= 0; i--) {
@@ -12,16 +11,14 @@ function parseInventory(text) {
         if (!m) continue;
         const num = Number(m[1]);
 
-        if (MUSEUM_ITEMS.some((re) => re.test(line))) {
-            musNums.push(num);
-        } else if (FAVORITE_ITEMS.some((re) => re.test(line))) {
+        if (FAVORITE_ITEMS.some((re) => re.test(line))) {
             favNums.push(num);
         } else {
             otherNums.push(num);
         }
     }
 
-    return { favNums, musNums, otherNums };
+    return { favNums, otherNums };
 }
 
 function parseFavorite(text) {

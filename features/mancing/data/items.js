@@ -13,9 +13,6 @@ const FAVORITE_ITEMS = [
     /Dewa Naga Laut/i,
 ];
 
-const MUSEUM_ITEMS = [];
-
 module.exports = {
     FAVORITE_ITEMS,
-    MUSEUM_ITEMS,
 };
