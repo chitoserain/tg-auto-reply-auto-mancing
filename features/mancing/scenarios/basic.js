@@ -9,7 +9,11 @@ async function runBasic(client, peer) {
     const fishingTimes = Number(getEnv("FISHING_TIMES", 4));
     const inventoryCheckCount = Number(getEnv("INVENTORY_CHECK", 1));
 
+    const timeoutMs = Number(getEnv("FISHING_TIMEOUT_MS", 330000));
+    const maxRetries = Number(getEnv("MAX_TIMEOUT_RETRIES", 3));
+
     let count = 0;
+    let timeoutRetries = 0;
 
     while (true) {
         count++;
@@ -19,7 +23,9 @@ async function runBasic(client, peer) {
         await sendMancing(client, peer);
 
         try {
-            const result = await waitForAnyText(client, peer, [finishRegex, fullRegex], { timeoutMs: 300000 });
+            const result = await waitForAnyText(client, peer, [finishRegex, fullRegex], { timeoutMs });
+
+            timeoutRetries = 0;
 
             if (fullRegex.test(result.message)) {
                 console.log("[Basic] Inventory Full detected! Stopping program.");
@@ -27,9 +33,17 @@ async function runBasic(client, peer) {
                 break;
             }
         } catch (e) {
-            console.error("Timeout waiting for finish message. Stopping.");
+            timeoutRetries++;
 
-            break;
+            console.error(`[Basic] Timeout waiting for response (${timeoutMs}ms). Retry ${timeoutRetries}/${maxRetries}...`);
+
+            if (timeoutRetries >= maxRetries) {
+                console.error("[Basic] Max retries reached. Stopping program.");
+
+                break;
+            }
+
+            continue;
         }
 
         if (count % fishingTimes === 0) {

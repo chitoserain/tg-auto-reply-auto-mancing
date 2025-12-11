@@ -11,7 +11,11 @@ async function runVIP(client, peer, useBoost = false) {
     const fishingTimes = Number(getEnv("VIP_FISHING_TIMES", 1));
     const inventoryCheckCount = Number(getEnv("VIP_INVENTORY_CHECK", 2));
 
+    const timeoutMs = Number(getEnv("FISHING_TIMEOUT_MS", 330000));
+    const maxRetries = Number(getEnv("MAX_TIMEOUT_RETRIES", 3));
+
     let count = 0;
+    let timeoutRetries = 0;
 
     while (true) {
         count++;
@@ -25,7 +29,9 @@ async function runVIP(client, peer, useBoost = false) {
         }
 
         try {
-            const result = await waitForAnyText(client, peer, [finishRegex, fullRegex], { timeoutMs: 600000 });
+            const result = await waitForAnyText(client, peer, [finishRegex, fullRegex], { timeoutMs });
+
+            timeoutRetries = 0;
 
             if (fullRegex.test(result.message)) {
                 console.log("[VIP] Inventory Full detected! Stopping program.");
@@ -33,9 +39,17 @@ async function runVIP(client, peer, useBoost = false) {
                 break;
             }
         } catch (e) {
-            console.error("Timeout waiting for finish message. Stopping.");
+            timeoutRetries++;
 
-            break;
+            console.error(`[VIP] Timeout waiting for response (${timeoutMs}ms). Retry ${timeoutRetries}/${maxRetries}...`);
+
+            if (timeoutRetries >= maxRetries) {
+                console.error("[VIP] Max retries reached. Stopping program.");
+
+                break;
+            }
+
+            continue;
         }
 
         console.log(`[VIP] Checking inventory (${inventoryCheckCount} cycles)...`);
