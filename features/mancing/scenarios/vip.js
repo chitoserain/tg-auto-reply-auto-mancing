@@ -11,7 +11,7 @@ async function runVIP(client, peer, useBoost = false) {
     const fishingTimes = Number(getEnv("VIP_FISHING_TIMES", 1));
     const inventoryCheckCount = Number(getEnv("VIP_INVENTORY_CHECK", 2));
 
-    const timeoutMs = Number(getEnv("FISHING_TIMEOUT_MS", 330000));
+    const timeoutMs = Number(getEnv("FISHING_TIMEOUT_MS", 600000));
     const maxRetries = Number(getEnv("MAX_TIMEOUT_RETRIES", 3));
 
     let count = 0;
