@@ -4,9 +4,6 @@ const FAVORITE_ITEMS = [
     /Ubur.?ubur Alien(?!.*Kristal)/i,
     /Megalodon(?!.*Purba)/i,
     /Kraken/i,
-];
-
-const MUSEUM_ITEMS = [
     /Naga Laut Emas/i,
     /Ubur.?ubur Alien Kristal/i,
     /Ratu Laut Mutiara/i,
@@ -15,6 +12,8 @@ const MUSEUM_ITEMS = [
     /Megalodon Purba/i,
     /Dewa Naga Laut/i,
 ];
+
+const MUSEUM_ITEMS = [];
 
 module.exports = {
     FAVORITE_ITEMS,

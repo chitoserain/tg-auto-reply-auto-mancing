@@ -17,11 +17,10 @@ async function checkInventory(client, peer) {
     return parseInventory(invMsg.message || "");
 }
 
-async function processActions(client, peer, { favNums = [], musNums = [], sellNums = [] }) {
+async function processActions(client, peer, { favNums = [], sellNums = [] }) {
     const priorityActions = [];
 
     for (const n of favNums) priorityActions.push({ index: n, type: 'fav' });
-    for (const n of musNums) priorityActions.push({ index: n, type: 'mus' });
 
     priorityActions.sort((a, b) => b.index - a.index);
 
@@ -32,10 +31,6 @@ async function processActions(client, peer, { favNums = [], musNums = [], sellNu
             await sendMessage(client, peer, `/favorite ${action.index}`);
 
             console.log(`Processed Favorite: ${action.index}`);
-        } else if (action.type === 'mus') {
-            await sendMessage(client, peer, `/add_museum ${action.index}`);
-
-            console.log(`Processed Museum: ${action.index}`);
         }
     }
 
@@ -46,7 +41,7 @@ async function processActions(client, peer, { favNums = [], musNums = [], sellNu
 
         const indicesToSell = Array.from({ length: sellCount }, (_, i) => i + 1);
         const cmd = `/jual ${indicesToSell.join(' ')}`;
-        
+
         await sendMessage(client, peer, cmd);
 
         console.log(`Processed Bulk Sell: 1 to ${sellCount}`);
@@ -56,7 +51,7 @@ async function processActions(client, peer, { favNums = [], musNums = [], sellNu
 async function sellAll(client, peer) {
     await randomSleep(2000, 5000);
     await sendMessage(client, peer, "/jual semua");
-    
+
     console.log("Sold all remaining items.");
 }
 
