@@ -9,7 +9,8 @@ async function runInventoryCheck(client, peer) {
         pageCount++;
         console.log(`[Inventory Check] Checking Page/Batch #${pageCount}`);
 
-        const { favNums, sellNums } = await checkInventory(client, peer);
+        const { favNums, otherNums } = await checkInventory(client, peer);
+        const sellNums = otherNums;
         const totalItems = favNums.length + sellNums.length;
 
         console.log(`[Inventory Check] Found ${totalItems} items.`);
