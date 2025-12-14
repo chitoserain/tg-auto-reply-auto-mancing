@@ -1,4 +1,4 @@
-const { FAVORITE_ITEMS } = require("../data/items");
+const { OTHER_ITEMS } = require("../data/items");
 
 function parseInventory(text) {
     const lines = String(text).split(/\r?\n/);
@@ -11,10 +11,10 @@ function parseInventory(text) {
         if (!m) continue;
         const num = Number(m[1]);
 
-        if (FAVORITE_ITEMS.some((re) => re.test(line))) {
-            favNums.push(num);
-        } else {
+        if (OTHER_ITEMS.some((re) => re.test(line))) {
             otherNums.push(num);
+        } else {
+            favNums.push(num);
         }
     }
 

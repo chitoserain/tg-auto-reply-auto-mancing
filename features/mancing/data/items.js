@@ -1,18 +1,24 @@
-const FAVORITE_ITEMS = [
-    /Trisu?la Poseidon/i,
-    /Naga Laut(?!.*Emas)/i,
-    /Ubur.?ubur Alien(?!.*Kristal)/i,
-    /Megalodon(?!.*Purba)/i,
-    /Kraken/i,
-    /Naga Laut Emas/i,
-    /Ubur.?ubur Alien Kristal/i,
-    /Ratu Laut Mutiara/i,
-    /Duyung Aurora/i,
-    /Raja Atlantis/i,
-    /Megalodon Purba/i,
-    /Dewa Naga Laut/i,
+const OTHER_ITEMS = [
+    /Kerang/i,
+    /Ikan Kecil/i,
+    /Ikan Tropis/i,
+    /Udang/i,
+    /Lobster/i,
+    /Kepiting/i,
+    /Belut Laut/i,
+    /Penyu/i,
+    /Gurita/i,
+    /Cumi Raksasa/i,
+    /Ubur.?ubur Raksasa/i,
+    /Anjing Laut/i,
+    /Hiu Putih/i,
+    /Lumba.?lumba/i,
+    /Paus/i,
+    /Putri Duyung/i,
+    /Duyung(?!.*Aurora)/i,
+    /Pangeran Duyung/i,
 ];
 
 module.exports = {
-    FAVORITE_ITEMS,
+    OTHER_ITEMS,
 };
