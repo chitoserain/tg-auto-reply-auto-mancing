@@ -2,7 +2,7 @@ const { waitForText, waitForAnyText } = require("../../../lib/receiver");
 const { sleep, getEnv, randomSleep } = require("../../../lib/utils");
 const { sendMancing, checkInventory, processActions } = require("../utils/actions");
 const { sendMessage } = require("../../../lib/sender");
-const { parseFavorite } = require("../utils/parsing");
+
 
 async function runVIP(client, peer, useBoost = false) {
     const finishRegex = /SESI MANCING SELESAI!/i;
@@ -68,35 +68,11 @@ async function runVIP(client, peer, useBoost = false) {
 
 async function handleBoostStrategy(client, peer) {
     console.log("[VIP] Executing Boost Strategy...");
+
     await randomSleep(2000, 4000);
-    await sendMessage(client, peer, "/favorite");
+    await sendMessage(client, peer, "/boost");
 
-    try {
-        const favMsg = await waitForText(client, peer, /Favorite/i, { timeoutMs: 60000 });
-        const trisulaIndices = parseFavorite(favMsg.message || "");
-
-        trisulaIndices.sort((a, b) => b - a);
-
-        const toRetrieve = trisulaIndices.slice(0, 2);
-
-        if (toRetrieve.length === 2) {
-            console.log(`[VIP] Retrieving 2 Trisula Poseidon from favorites (Bottom-up): ${toRetrieve.join(", ")}`);
-
-            for (const index of toRetrieve) {
-                await randomSleep(2000, 4000);
-                await sendMessage(client, peer, `/unfavorite ${index}`);
-            }
-
-            await randomSleep(2000, 4000);
-            await sendMessage(client, peer, "/boost");
-
-            console.log("[VIP] Boost activated!");
-        } else {
-            console.log(`[VIP] Not enough Trisula Poseidon found (Found: ${toRetrieve.length}). Skipping boost.`);
-        }
-    } catch (e) {
-        console.error("[VIP] Error in boost strategy:", e);
-    }
+    console.log("[VIP] Boost activated!");
 }
 
 module.exports = { runVIP };
