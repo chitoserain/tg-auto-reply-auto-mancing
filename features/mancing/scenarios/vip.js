@@ -4,8 +4,7 @@ const { sendMancing, checkInventory, processActions } = require("../utils/action
 const { sendMessage } = require("../../../lib/sender");
 const { cleanInventoryLoop } = require("./inventory_check");
 
-
-async function runVIP(client, peer, useBoost = false) {
+async function runVIP(client, primaryPeer, backupPeer = null, useBoost = false) {
     const finishRegex = /SESI MANCING SELESAI!/i;
     const fullRegex = /Inventory.*Penuh/i;
 
@@ -15,22 +14,23 @@ async function runVIP(client, peer, useBoost = false) {
     const timeoutMs = Number(getEnv("FISHING_TIMEOUT_MS", 600000));
     const maxRetries = Number(getEnv("MAX_TIMEOUT_RETRIES", 3));
 
+    let currentPeer = primaryPeer;
     let count = 0;
     let timeoutRetries = 0;
 
     while (true) {
         count++;
 
-        console.log(`\n[VIP] Mancing #${count}`);
+        console.log(`\n[VIP] Mancing #${count} (${currentPeer})`);
 
-        await sendMancing(client, peer);
+        await sendMancing(client, currentPeer);
 
         if (useBoost) {
-            await handleBoostStrategy(client, peer);
+            await handleBoostStrategy(client, currentPeer);
         }
 
         try {
-            const result = await waitForAnyText(client, peer, [finishRegex, fullRegex], { timeoutMs });
+            const result = await waitForAnyText(client, currentPeer, [finishRegex, fullRegex], { timeoutMs });
 
             timeoutRetries = 0;
 
@@ -47,7 +47,16 @@ async function runVIP(client, peer, useBoost = false) {
             console.error(`[VIP] Timeout waiting for response (${timeoutMs}ms). Retry ${timeoutRetries}/${maxRetries}...`);
 
             if (timeoutRetries >= maxRetries) {
-                console.error("[VIP] Max retries reached. Stopping program.");
+                if (backupPeer && currentPeer !== backupPeer) {
+                    console.log(`[VIP] Primary bot (${currentPeer}) unresponsive. Switching to Backup Bot (${backupPeer})...`);
+
+                    currentPeer = backupPeer;
+                    timeoutRetries = 0;
+
+                    continue;
+                }
+
+                console.error("[VIP] Max retries reached and no backup available. Stopping program.");
 
                 break;
             }
@@ -60,9 +69,13 @@ async function runVIP(client, peer, useBoost = false) {
         for (let i = 0; i < inventoryCheckCount; i++) {
             console.log(`[VIP] Post-Fishing Check [${i + 1}/${inventoryCheckCount}]`);
 
-            const { favNums, otherNums } = await checkInventory(client, peer);
+            try {
+                const { favNums, otherNums } = await checkInventory(client, currentPeer);
 
-            await processActions(client, peer, { favNums, sellNums: otherNums });
+                await processActions(client, currentPeer, { favNums, sellNums: otherNums });
+            } catch (e) {
+                console.error(`[VIP] Error during inventory check: ${e.message}. Skipping this check.`);
+            }
 
             if (i < inventoryCheckCount - 1) await sleep(2000);
         }
