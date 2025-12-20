@@ -1,7 +1,8 @@
-const { waitForText, waitForAnyText } = require("../../../lib/receiver");
+const { waitForAnyText } = require("../../../lib/receiver");
 const { sleep, getEnv, randomSleep } = require("../../../lib/utils");
 const { sendMancing, checkInventory, processActions } = require("../utils/actions");
 const { sendMessage } = require("../../../lib/sender");
+const { cleanInventoryLoop } = require("./inventory_check");
 
 
 async function runVIP(client, peer, useBoost = false) {
@@ -34,9 +35,11 @@ async function runVIP(client, peer, useBoost = false) {
             timeoutRetries = 0;
 
             if (fullRegex.test(result.message)) {
-                console.log("[VIP] Inventory Full detected! Stopping program.");
+                console.log("[VIP] Inventory Full detected! Switching to Inventory Cleaning Loop...");
 
-                break;
+                await cleanInventoryLoop(client, currentPeer);
+
+                continue;
             }
         } catch (e) {
             timeoutRetries++;

@@ -1,8 +1,8 @@
 const { sleep } = require("../../../lib/utils");
 const { checkInventory, processActions } = require("../utils/actions");
 
-async function runInventoryCheck(client, peer) {
-    console.log("[Inventory Check] Starting Inventory Check Loop...");
+async function cleanInventoryLoop(client, peer) {
+    console.log("[Inventory Check] Starting Inventory Cleaning Loop...");
     let pageCount = 0;
 
     while (true) {
@@ -18,7 +18,8 @@ async function runInventoryCheck(client, peer) {
         await processActions(client, peer, { favNums, sellNums });
 
         if (totalItems < 20) {
-            console.log("[Inventory Check] Less than 20 items found. Inventory cleared/processed. Stopping.");
+            console.log("[Inventory Check] Less than 20 items found. Inventory cleared/processed.");
+
             break;
         }
 
@@ -27,4 +28,12 @@ async function runInventoryCheck(client, peer) {
     }
 }
 
-module.exports = { runInventoryCheck };
+async function runInventoryCheck(client, peer) {
+    await cleanInventoryLoop(client, peer);
+
+    console.log("[Inventory Check] Script Finished. Exiting.");
+
+    process.exit(0);
+}
+
+module.exports = { runInventoryCheck, cleanInventoryLoop };

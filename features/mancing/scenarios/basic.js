@@ -1,6 +1,7 @@
-const { waitForText, waitForAnyText } = require("../../../lib/receiver");
+const { waitForAnyText } = require("../../../lib/receiver");
 const { sleep, getEnv } = require("../../../lib/utils");
 const { sendMancing, checkInventory, processActions } = require("../utils/actions");
+const { cleanInventoryLoop } = require("./inventory_check");
 
 async function runBasic(client, peer) {
     const finishRegex = /SESI MANCING SELESAI!/i;
@@ -28,9 +29,11 @@ async function runBasic(client, peer) {
             timeoutRetries = 0;
 
             if (fullRegex.test(result.message)) {
-                console.log("[Basic] Inventory Full detected! Stopping program.");
+                console.log("[Basic] Inventory Full detected! Switching to Inventory Cleaning Loop...");
 
-                break;
+                await cleanInventoryLoop(client, currentPeer);
+
+                continue;
             }
         } catch (e) {
             timeoutRetries++;
