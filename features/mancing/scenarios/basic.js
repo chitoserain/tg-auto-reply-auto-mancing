@@ -1,6 +1,6 @@
 const { waitForAnyText } = require("../../../lib/receiver");
 const { sleep, getEnv } = require("../../../lib/utils");
-const { sendMancing, checkInventory, processActions } = require("../utils/actions");
+const { sendMancing, checkInventory, processActions, extractTrisula } = require("../utils/actions");
 const { cleanInventoryLoop } = require("./inventory_check");
 
 async function runBasic(client, primaryPeer, backupPeer = null) {
@@ -44,7 +44,7 @@ async function runBasic(client, primaryPeer, backupPeer = null) {
             if (timeoutRetries >= maxRetries) {
                 if (backupPeer && currentPeer !== backupPeer) {
                     console.log(`[Basic] Primary bot (${currentPeer}) unresponsive. Switching to Backup Bot (${backupPeer})...`);
-    
+
                     currentPeer = backupPeer;
                     timeoutRetries = 0;
 
@@ -64,7 +64,19 @@ async function runBasic(client, primaryPeer, backupPeer = null) {
 
             for (let i = 0; i < inventoryCheckCount; i++) {
                 try {
-                    const { favNums, otherNums } = await checkInventory(client, currentPeer);
+                    const { favNums, otherNums, hasTrisula } = await checkInventory(client, currentPeer);
+
+                    if (hasTrisula) {
+                        console.log("[Basic] Trisula Poseidon detected! Pausing check to extract...");
+
+                        await extractTrisula(client, currentPeer);
+
+                        console.log("[Basic] Extraction done. Restarting inventory check for accuracy...");
+
+                        i--;
+
+                        continue;
+                    }
 
                     await processActions(client, currentPeer, { favNums, sellNums: otherNums });
                 } catch (e) {

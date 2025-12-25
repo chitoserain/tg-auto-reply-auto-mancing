@@ -1,6 +1,6 @@
 const { waitForAnyText } = require("../../../lib/receiver");
 const { sleep, getEnv, randomSleep } = require("../../../lib/utils");
-const { sendMancing, checkInventory, processActions } = require("../utils/actions");
+const { sendMancing, checkInventory, processActions, extractTrisula } = require("../utils/actions");
 const { sendMessage } = require("../../../lib/sender");
 const { cleanInventoryLoop } = require("./inventory_check");
 
@@ -70,7 +70,19 @@ async function runVIP(client, primaryPeer, backupPeer = null, useBoost = false) 
             console.log(`[VIP] Post-Fishing Check [${i + 1}/${inventoryCheckCount}]`);
 
             try {
-                const { favNums, otherNums } = await checkInventory(client, currentPeer);
+                const { favNums, otherNums, hasTrisula } = await checkInventory(client, currentPeer);
+
+                if (hasTrisula) {
+                    console.log("[VIP] Trisula Poseidon detected! Pausing check to extract...");
+
+                    await extractTrisula(client, currentPeer);
+
+                    console.log("[VIP] Extraction done. Restarting inventory check for accuracy...");
+
+                    i--;
+
+                    continue;
+                }
 
                 await processActions(client, currentPeer, { favNums, sellNums: otherNums });
             } catch (e) {

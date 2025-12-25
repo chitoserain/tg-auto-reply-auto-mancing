@@ -1,15 +1,27 @@
 const { sleep } = require("../../../lib/utils");
-const { checkInventory, processActions } = require("../utils/actions");
+const { checkInventory, processActions, extractTrisula } = require("../utils/actions");
 
 async function cleanInventoryLoop(client, peer) {
-    console.log("[Inventory Check] Starting Inventory Cleaning Loop...");
+    console.log("\n[Inventory Check] Starting Inventory Cleaning Loop...");
+
     let pageCount = 0;
 
     while (true) {
         pageCount++;
-        console.log(`[Inventory Check] Checking Page/Batch #${pageCount}`);
+        console.log(`\n[Inventory Check] Checking Page/Batch #${pageCount}`);
 
-        const { favNums, otherNums } = await checkInventory(client, peer);
+        const { favNums, otherNums, hasTrisula } = await checkInventory(client, peer);
+
+        if (hasTrisula) {
+            console.log("[Inventory Check] Trisula Poseidon detected! Pausing check to extract...");
+
+            await extractTrisula(client, peer);
+
+            console.log("\n[Inventory Check] Extraction done. Restarting inventory check for accuracy...");
+
+            continue;
+        }
+
         const sellNums = otherNums;
         const totalItems = favNums.length + sellNums.length;
 

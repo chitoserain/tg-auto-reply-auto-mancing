@@ -4,12 +4,17 @@ function parseInventory(text) {
     const lines = String(text).split(/\r?\n/);
     const favNums = [];
     const otherNums = [];
+    let hasTrisula = false;
 
     for (let i = lines.length - 1; i >= 0; i--) {
         const line = lines[i];
         const m = line.match(/^\s*(\d+)\./);
         if (!m) continue;
         const num = Number(m[1]);
+
+        if (/Trisu?la Poseidon/i.test(line)) {
+            hasTrisula = true;
+        }
 
         if (OTHER_ITEMS.some((re) => re.test(line))) {
             otherNums.push(num);
@@ -18,7 +23,7 @@ function parseInventory(text) {
         }
     }
 
-    return { favNums, otherNums };
+    return { favNums, otherNums, hasTrisula };
 }
 
 function parseFavorite(text) {
