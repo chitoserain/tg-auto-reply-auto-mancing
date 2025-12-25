@@ -2,6 +2,7 @@ const { getEnv, prompt } = require("../../lib/utils");
 const { runBasic } = require("./scenarios/basic");
 const { runVIP } = require("./scenarios/vip");
 const { runInventoryCheck } = require("./scenarios/inventory_check");
+const { runBuyUmpan } = require("./scenarios/buy_umpan");
 
 async function run(client) {
     const peer = await selectBot();
@@ -10,8 +11,9 @@ async function run(client) {
     console.log('1. Basic');
     console.log('2. VIP');
     console.log('3. Inventory Check');
+    console.log('4. Beli Umpan');
 
-    const choice = await prompt('Pilih skenario (1-3): ');
+    const choice = await prompt('Pilih skenario (1-4): ');
 
     if (choice.trim() === '1') {
         await runBasic(client, peer.primary, peer.backup);
@@ -22,6 +24,8 @@ async function run(client) {
         await runVIP(client, peer.primary, peer.backup, useBoost);
     } else if (choice.trim() === '3') {
         await runInventoryCheck(client, peer.primary);
+    } else if (choice.trim() === '4') {
+        await runBuyUmpan(client, peer.primary);
     } else {
         console.log("Pilihan tidak valid.");
     }
