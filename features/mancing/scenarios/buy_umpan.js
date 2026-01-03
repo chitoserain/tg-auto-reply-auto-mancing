@@ -5,6 +5,20 @@ const { prompt, sleep, randomSleep } = require("../../../lib/utils");
 async function runBuyUmpan(client, peer) {
     console.log("\n[Buy Umpan] Memulai skenario beli umpan...");
 
+    console.log("\nPilih Jenis Umpan:");
+    console.log("1. Umpan Celestial (1M per 10x)");
+    console.log("2. Umpan Mythical (500k per 10x)");
+
+    const baitChoice = await prompt("Pilih umpan (1-2): ");
+
+    let baitName = "Umpan Celestial";
+    let pricePer10 = 1000000;
+
+    if (baitChoice.trim() === '2') {
+        baitName = "Umpan Mythical";
+        pricePer10 = 500000;
+    }
+
     const countInput = await prompt("Berapa kali beli umpan? ");
     const count = parseInt(countInput);
 
@@ -13,15 +27,10 @@ async function runBuyUmpan(client, peer) {
         return;
     }
 
-    const baitName = "Umpan Celestial";
-    console.log(
-        `\n[Buy Umpan] Akan membeli '${baitName}' sebanyak ${count} kali (Qty: 10x per transaksi).`
-    );
+    console.log(`\n[Buy Umpan] Akan membeli '${baitName}' sebanyak ${count} kali (Qty: 10x per transaksi).`);
 
-    const equipInput = await prompt(
-        "Apakah umpan mau dipakai langsung setelah beli? (y/n): "
-    );
-    const shouldEquip = equipInput.toLowerCase().trim() === "y";
+    const equipInput = await prompt("Apakah umpan mau dipakai langsung setelah beli? (y/n): ");
+    const shouldEquip = equipInput.toLowerCase().trim() === 'y';
 
     let totalCoins = 0;
     let totalBait = 0;
@@ -35,27 +44,19 @@ async function runBuyUmpan(client, peer) {
             if (i === 1) {
                 await sendMessage(client, peer, "/shop");
 
-                const shopMsg = await waitForText(
-                    client,
-                    peer,
-                    /Toko Peralatan Memancing/i,
-                    { timeoutMs: 30000 }
-                );
+                const shopMsg = await waitForText(client, peer, /Toko Peralatan Memancing/i, { timeoutMs: 30000 });
 
                 if (!shopMsg || !shopMsg.buttons) {
                     throw new Error("Gagal membuka toko.");
                 }
 
                 const allButtons = shopMsg.buttons.flat();
-                const umpanBtn = allButtons.find(
-                    (b) => b.text && /Umpan/i.test(b.text)
-                );
+                const umpanBtn = allButtons.find(b => b.text && /Umpan/i.test(b.text));
 
                 if (!umpanBtn) {
                     throw new Error("Tombol 'Umpan' tidak ditemukan.");
                 }
 
-                // console.log("[Buy Umpan] Klik tombol 'Umpan'...");
                 umpanBtn.client = client;
 
                 await umpanBtn.click({ sharePhone: false });
@@ -66,9 +67,7 @@ async function runBuyUmpan(client, peer) {
                 for (const msg of msgs) {
                     if (msg.buttons) {
                         const flat = msg.buttons.flat();
-                        const found = flat.find(
-                            (b) => b.text && /Lihat Umpan Lagi/i.test(b.text)
-                        );
+                        const found = flat.find(b => b.text && /Lihat Umpan Lagi/i.test(b.text));
 
                         if (found) {
                             lihatLagiBtn = found;
@@ -78,23 +77,14 @@ async function runBuyUmpan(client, peer) {
                 }
 
                 if (!lihatLagiBtn) {
-                    console.log(
-                        "[Buy Umpan] Tombol 'Lihat Umpan Lagi' tidak ketemu, fallback ke /shop."
-                    );
+                    console.log("[Buy Umpan] Tombol 'Lihat Umpan Lagi' tidak ketemu, fallback ke /shop.");
 
                     await sendMessage(client, peer, "/shop");
 
-                    const shopMsg = await waitForText(
-                        client,
-                        peer,
-                        /Toko Peralatan Memancing/i,
-                        { timeoutMs: 30000 }
-                    );
+                    const shopMsg = await waitForText(client, peer, /Toko Peralatan Memancing/i, { timeoutMs: 30000 });
 
                     if (shopMsg && shopMsg.buttons) {
-                        const uBtn = shopMsg.buttons
-                            .flat()
-                            .find((b) => b.text && /Umpan/i.test(b.text));
+                        const uBtn = shopMsg.buttons.flat().find(b => b.text && /Umpan/i.test(b.text));
 
                         if (uBtn) {
                             uBtn.client = client;
@@ -103,8 +93,6 @@ async function runBuyUmpan(client, peer) {
                         }
                     }
                 } else {
-                    // console.log("[Buy Umpan] Klik tombol 'Lihat Umpan Lagi'...");
-
                     lihatLagiBtn.client = client;
 
                     await lihatLagiBtn.click({ sharePhone: false });
@@ -119,7 +107,7 @@ async function runBuyUmpan(client, peer) {
             for (const msg of baitListMsgs) {
                 if (msg.buttons) {
                     const flat = msg.buttons.flat();
-                    const found = flat.find((b) => b.text && b.text.includes(baitName));
+                    const found = flat.find(b => b.text && b.text.includes(baitName));
 
                     if (found) {
                         baitBtn = found;
@@ -132,7 +120,6 @@ async function runBuyUmpan(client, peer) {
                 throw new Error(`Tombol '${baitName}' tidak ditemukan.`);
             }
 
-            // console.log(`[Buy Umpan] Klik tombol '${baitBtn.text}'...`);
             baitBtn.client = client;
 
             await baitBtn.click({ sharePhone: false });
@@ -144,8 +131,8 @@ async function runBuyUmpan(client, peer) {
             for (const msg of qtyMsgs) {
                 if (msg.buttons) {
                     const flat = msg.buttons.flat();
+                    const found = flat.find(b => b.text && b.text.trim() === "10x");
 
-                    const found = flat.find((b) => b.text && b.text.trim() === "10x");
                     if (found) {
                         qtyBtn = found;
                         break;
@@ -157,27 +144,20 @@ async function runBuyUmpan(client, peer) {
                 throw new Error("Tombol '10x' tidak ditemukan.");
             }
 
-            // console.log(`[Buy Umpan] Klik tombol '${qtyBtn.text}'...`);
             qtyBtn.client = client;
 
             await qtyBtn.click({ sharePhone: false });
 
-            totalCoins += 1000000;
+            totalCoins += pricePer10;
             totalBait += 30;
 
-            console.log(
-                `[Buy Umpan] Transaksi sukses. Total Koin: ${totalCoins.toLocaleString()}, Total Umpan: ${totalBait}`
-            );
-
-            // console.log("[Buy Umpan] Menunggu konfirmasi pembelian...");
+            console.log(`[Buy Umpan] Transaksi sukses. Total Koin: ${totalCoins.toLocaleString()}, Total Umpan: ${totalBait}`);
 
             await sleep(3000);
 
             if (i === count) {
                 if (shouldEquip) {
-                    console.log(
-                        "[Buy Umpan] Pembelian terakhir selesai. Opsi 'Pakai Umpan' aktif. Mencari 'Lihat Peralatan'..."
-                    );
+                    console.log("[Buy Umpan] Pembelian terakhir selesai. Opsi 'Pakai Umpan' aktif. Mencari 'Lihat Peralatan'...");
 
                     const successMsgs = await client.getMessages(peer, { limit: 3 });
                     let equipMenuBtn = null;
@@ -185,9 +165,7 @@ async function runBuyUmpan(client, peer) {
                     for (const msg of successMsgs) {
                         if (msg.buttons) {
                             const flat = msg.buttons.flat();
-                            const found = flat.find(
-                                (b) => b.text && /Lihat Peralatan/i.test(b.text)
-                            );
+                            const found = flat.find(b => b.text && /Lihat Peralatan/i.test(b.text));
 
                             if (found) {
                                 equipMenuBtn = found;
@@ -197,7 +175,6 @@ async function runBuyUmpan(client, peer) {
                     }
 
                     if (equipMenuBtn) {
-                        // console.log(`[Buy Umpan] Klik '${equipMenuBtn.text}'...`);
                         equipMenuBtn.client = client;
 
                         await equipMenuBtn.click({ sharePhone: false });
@@ -209,10 +186,8 @@ async function runBuyUmpan(client, peer) {
                         for (const msg of equipMsgs) {
                             if (msg.buttons) {
                                 const flat = msg.buttons.flat();
-
-                                const found = flat.find(
-                                    (b) => b.text && /Pakai.*Umpan Celestial/i.test(b.text)
-                                );
+                                const regex = new RegExp(`Pakai.*${baitName}`, 'i');
+                                const found = flat.find(b => b.text && regex.test(b.text));
 
                                 if (found) {
                                     useBaitBtn = found;
@@ -222,31 +197,22 @@ async function runBuyUmpan(client, peer) {
                         }
 
                         if (useBaitBtn) {
-                            // console.log(`[Buy Umpan] Klik '${useBaitBtn.text}'...`);
                             useBaitBtn.client = client;
 
                             await useBaitBtn.click({ sharePhone: false });
 
-                            console.log("[Buy Umpan] Umpan Celestial telah dipasang!");
+                            console.log(`[Buy Umpan] ${baitName} telah dipasang!`);
                         } else {
-                            console.error(
-                                "[Buy Umpan] Tombol 'Pakai Umpan Celestial' tidak ditemukan di menu peralatan."
-                            );
+                            console.error(`[Buy Umpan] Tombol 'Pakai ${baitName}' tidak ditemukan di menu peralatan.`);
                         }
                     } else {
-                        console.error(
-                            "[Buy Umpan] Tombol 'Lihat Peralatan' tidak ditemukan setelah pembelian terakhir."
-                        );
+                        console.error("[Buy Umpan] Tombol 'Lihat Peralatan' tidak ditemukan setelah pembelian terakhir.");
                     }
                 } else {
-                    console.log(
-                        "[Buy Umpan] Pembelian selesai. Lewati pemasangan umpan."
-                    );
+                    console.log("[Buy Umpan] Pembelian selesai. Lewati pemasangan umpan.");
                 }
             } else {
-                console.log(
-                    "[Buy Umpan] Lanjut ke pembelian berikutnya..."
-                );
+                console.log("[Buy Umpan] Lanjut ke pembelian berikutnya...");
             }
         } catch (e) {
             console.error(`[Buy Umpan] Error pada transaksi ke-${i}: ${e.message}`);
