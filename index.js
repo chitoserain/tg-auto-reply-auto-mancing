@@ -30,8 +30,32 @@ async function main() {
 }
 
 if (require.main === module) {
-  main().catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
+  (async () => {
+    while (true) {
+      try {
+        await main();
+        break;
+      } catch (err) {
+        const errorString = String(err);
+        const isNetworkError =
+          errorString.includes('ETIMEDOUT') ||
+          errorString.includes('ECONNABORTED') ||
+          errorString.includes('ENETUNREACH') ||
+          errorString.includes('TIMEOUT');
+
+        if (isNetworkError) {
+          console.error('\n[!] Koneksi terputus atau tidak stabil. Mencoba menyambung kembali dalam 5 detik...');
+          console.error(`Detail error: ${err.message || err}\n`);
+
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        } else {
+          console.error('[FATAL ERROR] Terjadi kesalahan yang tidak terduga:');
+          console.error(err);
+          console.log('Restarting bot in 10 seconds...');
+
+          await new Promise(resolve => setTimeout(resolve, 10000));
+        }
+      }
+    }
+  })();
 }
