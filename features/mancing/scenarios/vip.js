@@ -1,12 +1,14 @@
-const { waitForAnyText } = require("../../../lib/receiver");
+const { waitForAnyText, latestMessageId } = require("../../../lib/receiver");
 const { sleep, getEnv, randomSleep } = require("../../../lib/utils");
 const { sendMancing, checkInventory, processActions, extractTrisula } = require("../utils/actions");
 const { sendMessage } = require("../../../lib/sender");
 const { cleanInventoryLoop } = require("./inventory_check");
+const { handleVerification } = require("../utils/verification");
 
 async function runVIP(client, primaryPeer, backupPeer = null, useBoost = false) {
     const finishRegex = /SESI MANCING SELESAI!/i;
     const fullRegex = /Inventory.*Penuh/i;
+    const verificationRegex = /Verifikasi keamanan/i;
 
     const fishingTimes = Number(getEnv("VIP_FISHING_TIMES", 1));
     const inventoryCheckCount = Number(getEnv("VIP_INVENTORY_CHECK", 2));
@@ -25,12 +27,14 @@ async function runVIP(client, primaryPeer, backupPeer = null, useBoost = false) 
 
         await sendMancing(client, currentPeer);
 
+        const startId = await latestMessageId(client, currentPeer);
+
         if (useBoost) {
             await handleBoostStrategy(client, currentPeer);
         }
 
         try {
-            const result = await waitForAnyText(client, currentPeer, [finishRegex, fullRegex], { timeoutMs });
+            const result = await waitForAnyText(client, currentPeer, [finishRegex, fullRegex, verificationRegex], { timeoutMs, sinceId: startId });
 
             timeoutRetries = 0;
 
@@ -41,16 +45,24 @@ async function runVIP(client, primaryPeer, backupPeer = null, useBoost = false) 
 
                 continue;
             }
+
+            if (verificationRegex.test(result.message)) {
+                await handleVerification(client, currentPeer, result);
+                continue;
+            }
         } catch (e) {
             timeoutRetries++;
 
             console.error(`[VIP] Timeout waiting for response (${timeoutMs}ms). Retry ${timeoutRetries}/${maxRetries}...`);
 
             if (timeoutRetries >= maxRetries) {
-                if (backupPeer && currentPeer !== backupPeer) {
-                    console.log(`[VIP] Primary bot (${currentPeer}) unresponsive. Switching to Backup Bot (${backupPeer})...`);
+                if (backupPeer) {
+                    const nextPeer = (currentPeer === primaryPeer) ? backupPeer : primaryPeer;
+                    const role = (nextPeer === primaryPeer) ? "Primary" : "Backup";
 
-                    currentPeer = backupPeer;
+                    console.log(`[VIP] Max retries reached on ${currentPeer}. Switching to ${role} Bot (${nextPeer})...`);
+
+                    currentPeer = nextPeer;
                     timeoutRetries = 0;
 
                     continue;

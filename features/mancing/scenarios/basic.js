@@ -2,10 +2,12 @@ const { waitForAnyText } = require("../../../lib/receiver");
 const { sleep, getEnv } = require("../../../lib/utils");
 const { sendMancing, checkInventory, processActions, extractTrisula } = require("../utils/actions");
 const { cleanInventoryLoop } = require("./inventory_check");
+const { handleVerification } = require("../utils/verification");
 
 async function runBasic(client, primaryPeer, backupPeer = null) {
     const finishRegex = /SESI MANCING SELESAI!/i;
     const fullRegex = /Inventory.*Penuh/i;
+    const verificationRegex = /Verifikasi keamanan/i;
 
     const fishingTimes = Number(getEnv("FISHING_TIMES", 4));
     const inventoryCheckCount = Number(getEnv("INVENTORY_CHECK", 1));
@@ -25,7 +27,7 @@ async function runBasic(client, primaryPeer, backupPeer = null) {
         await sendMancing(client, currentPeer);
 
         try {
-            const result = await waitForAnyText(client, currentPeer, [finishRegex, fullRegex], { timeoutMs });
+            const result = await waitForAnyText(client, currentPeer, [finishRegex, fullRegex, verificationRegex], { timeoutMs });
 
             timeoutRetries = 0;
 
@@ -36,16 +38,24 @@ async function runBasic(client, primaryPeer, backupPeer = null) {
 
                 continue;
             }
+
+            if (verificationRegex.test(result.message)) {
+                await handleVerification(client, currentPeer, result);
+                continue;
+            }
         } catch (e) {
             timeoutRetries++;
 
             console.error(`[Basic] Timeout waiting for response (${timeoutMs}ms). Retry ${timeoutRetries}/${maxRetries}...`);
 
             if (timeoutRetries >= maxRetries) {
-                if (backupPeer && currentPeer !== backupPeer) {
-                    console.log(`[Basic] Primary bot (${currentPeer}) unresponsive. Switching to Backup Bot (${backupPeer})...`);
+                if (backupPeer) {
+                    const nextPeer = (currentPeer === primaryPeer) ? backupPeer : primaryPeer;
+                    const role = (nextPeer === primaryPeer) ? "Primary" : "Backup";
 
-                    currentPeer = backupPeer;
+                    console.log(`[Basic] Max retries reached on ${currentPeer}. Switching to ${role} Bot (${nextPeer})...`);
+
+                    currentPeer = nextPeer;
                     timeoutRetries = 0;
 
                     continue;
