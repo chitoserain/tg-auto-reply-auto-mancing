@@ -5,6 +5,7 @@ function parseInventory(text) {
     const favNums = [];
     const otherNums = [];
     let hasTrisula = false;
+    let hasKotakCoklat = false;
 
     for (let i = lines.length - 1; i >= 0; i--) {
         const line = lines[i];
@@ -16,6 +17,10 @@ function parseInventory(text) {
             hasTrisula = true;
         }
 
+        if (/Kotak Coklat/i.test(line)) {
+            hasKotakCoklat = true;
+        }
+
         if (OTHER_ITEMS.some((re) => re.test(line))) {
             otherNums.push(num);
         } else {
@@ -23,7 +28,7 @@ function parseInventory(text) {
         }
     }
 
-    return { favNums, otherNums, hasTrisula };
+    return { favNums, otherNums, hasTrisula, hasKotakCoklat };
 }
 
 function parseFavorite(text) {

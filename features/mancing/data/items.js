@@ -14,8 +14,8 @@ const OTHER_ITEMS = [
     /Hiu Putih/i,
     /Lumba.?lumba/i,
     /Paus/i,
-    /Putri Duyung/i,
-    /Duyung(?!.*Aurora)/i,
+    /Putri Duyung(?!.*(Jiaoren|Aurora))/i,
+    /Duyung(?!.*(Aurora|Jiaoren))/i,
     /Pangeran Duyung/i,
 ];
 

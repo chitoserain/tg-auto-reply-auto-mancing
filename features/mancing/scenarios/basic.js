@@ -1,6 +1,6 @@
 const { waitForAnyText } = require("../../../lib/receiver");
 const { sleep, getEnv } = require("../../../lib/utils");
-const { sendMancing, checkInventory, processActions, extractTrisula } = require("../utils/actions");
+const { sendMancing, checkInventory, processActions, extractTrisula, extractKotakCoklat } = require("../utils/actions");
 const { cleanInventoryLoop } = require("./inventory_check");
 const { handleVerification } = require("../utils/verification");
 
@@ -74,12 +74,24 @@ async function runBasic(client, primaryPeer, backupPeer = null) {
 
             for (let i = 0; i < inventoryCheckCount; i++) {
                 try {
-                    const { favNums, otherNums, hasTrisula } = await checkInventory(client, currentPeer);
+                    const { favNums, otherNums, hasTrisula, hasKotakCoklat } = await checkInventory(client, currentPeer);
 
                     if (hasTrisula) {
                         console.log("[Basic] Trisula Poseidon detected! Pausing check to extract...");
 
                         await extractTrisula(client, currentPeer);
+
+                        console.log("[Basic] Extraction done. Restarting inventory check for accuracy...");
+
+                        i--;
+
+                        continue;
+                    }
+
+                    if (hasKotakCoklat) {
+                        console.log("[Basic] Kotak Coklat detected! Pausing check to extract...");
+
+                        await extractKotakCoklat(client, currentPeer);
 
                         console.log("[Basic] Extraction done. Restarting inventory check for accuracy...");
 

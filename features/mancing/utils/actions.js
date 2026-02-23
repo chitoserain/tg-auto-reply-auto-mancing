@@ -56,7 +56,15 @@ async function sellAll(client, peer) {
 }
 
 async function extractTrisula(client, peer) {
-    console.log("\n[Extraction] Found Trisula Poseidon! Initiating extraction...");
+    return extractItem(client, peer, "Trisula Poseidon", /Extract Trisula/i);
+}
+
+async function extractKotakCoklat(client, peer) {
+    return extractItem(client, peer, "Kotak Coklat", /Extract Coklat/i);
+}
+
+async function extractItem(client, peer, itemName, buttonRegex) {
+    console.log(`\n[Extraction] Found ${itemName}! Initiating extraction...`);
 
     await randomSleep(2000, 5000);
     await sendMessage(client, peer, "/extract");
@@ -65,20 +73,13 @@ async function extractTrisula(client, peer) {
         const msg = await waitForText(client, peer, /EXTRACT - MATERIALS/i, { timeoutMs: 60000 });
 
         if (msg && msg.buttons) {
-            // console.log(`[Extraction] Searching for 'Extract Trisula' button...`);
-
             const allButtons = msg.buttons.flat();
-            const extractBtn = allButtons.find(btn => btn.text && /Extract Trisula/i.test(btn.text));
+            const extractBtn = allButtons.find(btn => btn.text && buttonRegex.test(btn.text));
 
             if (extractBtn) {
-                // console.log(`[Extraction] Found target button: ${extractBtn.text}`);
-
                 extractBtn.client = client;
 
                 await extractBtn.click({ sharePhone: false });
-
-                // console.log("[Extraction] Button clicked successfully.");
-                // console.log("[Extraction] Waiting for confirmation dialog...");
 
                 let confirmMsg = null;
 
@@ -97,33 +98,27 @@ async function extractTrisula(client, peer) {
                 }
 
                 if (confirmMsg && confirmMsg.buttons) {
-                    // console.log("[Extraction] Confirmation dialog found!");
-
                     const cButtons = confirmMsg.buttons.flat();
                     const confirmBtn = cButtons.find(b => b.text && /Ya, Extract Semua/i.test(b.text));
 
                     if (confirmBtn) {
-                        // console.log(`[Extraction] Clicking confirmation button: ${confirmBtn.text}`);
-
                         confirmBtn.client = client;
 
                         await confirmBtn.click({ sharePhone: false });
-
-                        // console.log("[Extraction] Extraction confirmed!");
                     } else {
-                        console.error("[Extraction] Confirmation button 'Ya, Extract Semua' not found.");
+                        console.error(`[Extraction] Confirmation button 'Ya, Extract Semua' not found for ${itemName}.`);
                     }
                 } else {
-                    console.error("[Extraction] Confirmation dialog timed out or no buttons.");
+                    console.error(`[Extraction] Confirmation dialog timed out or no buttons for ${itemName}.`);
                 }
             } else {
-                console.error("[Extraction] 'Extract Trisula' button not found in options.");
+                console.error(`[Extraction] '${buttonRegex}' button not found in options for ${itemName}.`);
             }
         } else {
-            console.error("[Extraction] No buttons found in extract menu.");
+            console.error(`[Extraction] No buttons found in extract menu for ${itemName}.`);
         }
     } catch (e) {
-        console.error(`[Extraction] Error during extraction: ${e.message}`);
+        console.error(`[Extraction] Error during extraction of ${itemName}: ${e.message}`);
     }
 }
 
@@ -133,4 +128,5 @@ module.exports = {
     processActions,
     sellAll,
     extractTrisula,
+    extractKotakCoklat,
 };

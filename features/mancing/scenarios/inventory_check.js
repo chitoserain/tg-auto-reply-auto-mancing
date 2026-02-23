@@ -1,5 +1,5 @@
 const { sleep } = require("../../../lib/utils");
-const { checkInventory, processActions, extractTrisula } = require("../utils/actions");
+const { checkInventory, processActions, extractTrisula, extractKotakCoklat } = require("../utils/actions");
 
 async function cleanInventoryLoop(client, peer) {
     console.log("\n[Inventory Check] Starting Inventory Cleaning Loop...");
@@ -10,12 +10,22 @@ async function cleanInventoryLoop(client, peer) {
         pageCount++;
         console.log(`\n[Inventory Check] Checking Page/Batch #${pageCount}`);
 
-        const { favNums, otherNums, hasTrisula } = await checkInventory(client, peer);
+        const { favNums, otherNums, hasTrisula, hasKotakCoklat } = await checkInventory(client, peer);
 
         if (hasTrisula) {
             console.log("[Inventory Check] Trisula Poseidon detected! Pausing check to extract...");
 
             await extractTrisula(client, peer);
+
+            console.log("\n[Inventory Check] Extraction done. Restarting inventory check for accuracy...");
+
+            continue;
+        }
+
+        if (hasKotakCoklat) {
+            console.log("[Inventory Check] Kotak Coklat detected! Pausing check to extract...");
+
+            await extractKotakCoklat(client, peer);
 
             console.log("\n[Inventory Check] Extraction done. Restarting inventory check for accuracy...");
 
