@@ -50,6 +50,21 @@ async function runVIP(client, primaryPeer, backupPeer = null, useBoost = false) 
                 await handleVerification(client, currentPeer, result);
                 continue;
             }
+
+            if (finishRegex.test(result.message)) {
+                try {
+                    const recentMsgs = await client.getMessages(currentPeer, { limit: 3 });
+                    for (const m of recentMsgs) {
+                        if (m.media && m.media.className !== 'MessageMediaWebPage' && Math.abs(m.id - result.id) <= 2) {
+                            console.log(`[VIP] Special item (GIF) detected! Pinning message for myself...`);
+                            await client.pinMessage(currentPeer, m.id, { pmOneside: true });
+                            break;
+                        }
+                    }
+                } catch (err) {
+                    console.error(`[VIP] Failed to pin message: ${err.message}`);
+                }
+            }
         } catch (e) {
             timeoutRetries++;
 
