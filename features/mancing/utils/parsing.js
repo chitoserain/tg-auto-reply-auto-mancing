@@ -6,6 +6,7 @@ function parseInventory(text) {
     const otherNums = [];
     let hasTrisula = false;
     let hasKotakCoklat = false;
+    let hasKetupat = false;
 
     for (let i = lines.length - 1; i >= 0; i--) {
         const line = lines[i];
@@ -21,6 +22,10 @@ function parseInventory(text) {
             hasKotakCoklat = true;
         }
 
+        if (/Ketupat Raja Namrud/i.test(line)) {
+            hasKetupat = true;
+        }
+
         if (OTHER_ITEMS.some((re) => re.test(line))) {
             otherNums.push(num);
         } else {
@@ -28,7 +33,7 @@ function parseInventory(text) {
         }
     }
 
-    return { favNums, otherNums, hasTrisula, hasKotakCoklat };
+    return { favNums, otherNums, hasTrisula, hasKotakCoklat, hasKetupat };
 }
 
 function parseFavorite(text) {

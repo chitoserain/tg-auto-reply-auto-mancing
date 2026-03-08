@@ -63,6 +63,10 @@ async function extractKotakCoklat(client, peer) {
     return extractItem(client, peer, "Kotak Coklat", /Extract Coklat/i);
 }
 
+async function extractKetupat(client, peer) {
+    return extractItem(client, peer, "Ketupat Raja Namrud", /Extract Ketupat/i);
+}
+
 async function extractItem(client, peer, itemName, buttonRegex) {
     console.log(`\n[Extraction] Found ${itemName}! Initiating extraction...`);
 
@@ -129,4 +133,5 @@ module.exports = {
     sellAll,
     extractTrisula,
     extractKotakCoklat,
+    extractKetupat,
 };
