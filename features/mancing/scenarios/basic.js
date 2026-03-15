@@ -27,7 +27,19 @@ async function runBasic(client, primaryPeer, backupPeer = null) {
         await sendMancing(client, currentPeer);
 
         try {
-            const result = await waitForAnyText(client, currentPeer, [finishRegex, fullRegex, verificationRegex], { timeoutMs });
+            const result = await waitForAnyText(client, currentPeer, [finishRegex, fullRegex, verificationRegex], {
+                timeoutMs,
+                onNewMessage: async (m) => {
+                    try {
+                        if (m.media && m.media.className === 'MessageMediaDocument') {
+                            console.log(`[Basic] Special item (GIF) detected on-the-fly! Pinning message for myself...`);
+                            await client.pinMessage(currentPeer, m.id, { pmOneside: true });
+                        }
+                    } catch (err) {
+                        console.error(`[Basic] Failed to pin message: ${err.message}`);
+                    }
+                }
+            });
 
             timeoutRetries = 0;
 
@@ -44,20 +56,7 @@ async function runBasic(client, primaryPeer, backupPeer = null) {
                 continue;
             }
 
-            if (finishRegex.test(result.message)) {
-                try {
-                    const recentMsgs = await client.getMessages(currentPeer, { limit: 3 });
-                    for (const m of recentMsgs) {
-                        if (m.media && m.media.className !== 'MessageMediaWebPage' && Math.abs(m.id - result.id) <= 2) {
-                            console.log(`[Basic] Special item (GIF) detected! Pinning message for myself...`);
-                            await client.pinMessage(currentPeer, m.id, { pmOneside: true });
-                            break;
-                        }
-                    }
-                } catch (err) {
-                    console.error(`[Basic] Failed to pin message: ${err.message}`);
-                }
-            }
+
         } catch (e) {
             timeoutRetries++;
 
